@@ -10,7 +10,7 @@ $sqlCreateTable = "CREATE TABLE IF NOT EXISTS `user_activity` (
    PRIMARY KEY (`user_ip`)
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci";
 
-$connectionToDb = new mysqli("localhost:3306", "root", "IronSword12", ""); //Insert here your credentials for your mysql
+$connectionToDb = new mysqli("localhost:3306", "root", "", ""); //Insert here your credentials for your mysql
 
 // Check if db is created (if not then create db and corresponding table)
 $connectionToDb->execute_query($sqlCreateDataBase);
