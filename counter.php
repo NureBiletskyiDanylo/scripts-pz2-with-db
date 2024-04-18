@@ -17,18 +17,18 @@ $connectionToDb->execute_query($sqlCreateDataBase);
 $connectionToDb->select_db("php_counter");
 $connectionToDb -> execute_query($sqlCreateTable);
 
-
+// get basic important info
 $currentDate = new DateTime('now');
 $currentDateStr = $currentDate->format('Y-m-d H:i:s');
 $userIp = $_SERVER['REMOTE_ADDR'];
 
 //Check if the user's ip is in db
-
 $sql ="SELECT user_ip FROM php_counter.user_activity WHERE user_ip=?";
 $stmt = $connectionToDb->prepare($sql);
 $stmt -> bind_param("s", $userIp);
 $stmt->execute();
 $result = $stmt->get_result()->fetch_assoc();
+//if not then create a new field for user
 if (gettype($result) == "NULL")
 {
     unset($sql);
@@ -62,30 +62,42 @@ else
         {
             echo "Request was not successful";
         }
-        $interval = $currentDate->diff($lastDate);
-
-        $intervalString = $interval->format('%d');
-        if ($intervalString != "0")
-        {
-            $sql = "UPDATE php_counter.user_activity SET date = NOW(), todays_count = 1, total_count = total_count + 1 WHERE user_ip = ?";
-            $stmt  = $connectionToDb->prepare($sql);
-            $stmt->bind_param("s",$userIp);
-            $stmt->execute();
-        }
-        else
-        {
-            $sql = "UPDATE php_counter.user_activity SET date = NOW(), todays_count = todays_count + 1, total_count = total_count + 1 WHERE user_ip = ?";
-            $stmt  = $connectionToDb->prepare($sql);
-            $stmt->bind_param("s",$userIp);
-            $stmt->execute();
-        }
     }
     else
     {
         echo "Request was not successful so last date is being set up to today's date";
-        $lastDate = new DateTime('Y-m-d H:i:s');
+        $lastDate = new DateTime('now');
     }
-
+    // updating todays and total counts i.e being dependent on last visit
+    if ($currentDate->format("%d") != $lastDate->format("%d"))
+    {
+        $sql = "UPDATE php_counter.user_activity SET date = NOW(), todays_count = 1, total_count = total_count + 1 WHERE user_ip = ?";
+        $stmt  = $connectionToDb->prepare($sql);
+        $stmt->bind_param("s",$userIp);
+        $stmt->execute();
+    }
+    else
+    {
+        $sql = "UPDATE php_counter.user_activity SET date = NOW(), todays_count = todays_count + 1, total_count = total_count + 1 WHERE user_ip = ?";
+        $stmt  = $connectionToDb->prepare($sql);
+        $stmt->bind_param("s",$userIp);
+        $stmt->execute();
+    }
     
-
+    //output info
+    
+    $sqlSelectUserData = "SELECT * FROM php_counter.user_activity WHERE user_ip = ?";
+    $stmt = $connectionToDb->prepare($sqlSelectUserData);
+    $stmt->bind_param("s",$userIp);
+    $stmt->execute();
+    $userData = $stmt->get_result();
+    if ($userData->num_rows > 0)
+    {
+        $userData = $userData->fetch_assoc();
+        echo "<b>Info about the following user:</b> <br>
+        ip - " . $userData['user_ip'] . "<br>";
+        echo "last attendance -"  . $userData['date'] . "<br>";
+        echo "todays count -" . $userData['todays_count'] ."<br>";
+        echo "total count -" . $userData['total_count'] . "<br>";
+    }
 }
