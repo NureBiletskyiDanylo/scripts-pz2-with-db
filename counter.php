@@ -5,7 +5,7 @@ $sqlCreateDataBase = "CREATE DATABASE IF NOT EXISTS `php_counter` /*!40100 DEFAU
 $sqlCreateTable = "CREATE TABLE IF NOT EXISTS `user_activity` (
    `user_ip` varchar(50) NOT NULL,
    `date` datetime DEFAULT NULL,
-   `todays_count` int DEFAULT NULL,
+   `today_count` int DEFAULT NULL,
    `total_count` int DEFAULT NULL,
    PRIMARY KEY (`user_ip`)
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci";
@@ -32,7 +32,7 @@ $result = $stmt->get_result()->fetch_assoc();
 if (gettype($result) == "NULL")
 {
     unset($sql);
-    $sql = "INSERT INTO php_counter.user_activity (user_ip, date, todays_count, total_count)
+    $sql = "INSERT INTO php_counter.user_activity (user_ip, date, today_count, total_count)
     VALUES ( ?, NOW(), 1, 1)";
     $stmt = $connectionToDb->prepare($sql);
     $stmt -> bind_param("s",$userIp);
@@ -65,20 +65,20 @@ else
     }
     else
     {
-        echo "Request was not successful so last date is being set up to today's date";
+        echo "Request was not successful so last date is being set up to today date";
         $lastDate = new DateTime('now');
     }
     // updating todays and total counts i.e being dependent on last visit
     if ($currentDate->format("%d") != $lastDate->format("%d"))
     {
-        $sql = "UPDATE php_counter.user_activity SET date = NOW(), todays_count = 1, total_count = total_count + 1 WHERE user_ip = ?";
+        $sql = "UPDATE php_counter.user_activity SET date = NOW(), today_count = 1, total_count = total_count + 1 WHERE user_ip = ?";
         $stmt  = $connectionToDb->prepare($sql);
         $stmt->bind_param("s",$userIp);
         $stmt->execute();
     }
     else
     {
-        $sql = "UPDATE php_counter.user_activity SET date = NOW(), todays_count = todays_count + 1, total_count = total_count + 1 WHERE user_ip = ?";
+        $sql = "UPDATE php_counter.user_activity SET date = NOW(), today_count = today_count + 1, total_count = total_count + 1 WHERE user_ip = ?";
         $stmt  = $connectionToDb->prepare($sql);
         $stmt->bind_param("s",$userIp);
         $stmt->execute();
@@ -97,7 +97,7 @@ else
         echo "<b>Info about the following user:</b> <br>
         ip - " . $userData['user_ip'] . "<br>";
         echo "last attendance -"  . $userData['date'] . "<br>";
-        echo "todays count -" . $userData['todays_count'] ."<br>";
+        echo "today count -" . $userData['today_count'] ."<br>";
         echo "total count -" . $userData['total_count'] . "<br>";
     }
 }
